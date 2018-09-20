@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+    "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+    
+    <!-- 
+    为了能够让api接口不以.action结尾，必须这样配置，拦截所有url,然后交给对应的action处理。 
+    否则api接口都需要.action结尾才能访问，不雅观。但是，这样配置，所有的.jsp .html URL都会被拦截，
+    再去寻找他们对应的action, 一般我们是没有为他们配置action的，所以找不到action就会报错。一般有两种解决方案：
+    1、给每个.jsp .html页面都struts.xml中配置对应的action，并且action返回自身页面。
+    2、所有对.jsp .html 等资源的请求，都必须通过action来跳转返回，不要直接通过url来访问。
+    3、配置struts.action.excludePattern，将可以直接访问的资源过略掉，不让struts拦截
+    -->
+	<constant name="struts.action.extension" value="" /> 
+	<constant name="struts.action.excludePattern" value="/resources/.*?" /> 
+    <constant name="struts.ui.theme" value="simple" />  
+    <constant name="struts.i18n.encoding" value="utf-8" />  
+    <constant name="struts.multipart.maxSize" value="1073741824"/>
+    <constant name="struts.devMode" value="false"/>  
+    <!-- <constant name="struts.devMode" value="true"/> -->
+    
+   <constant name="api.system.config" value="api/system/config/"/>
+   
+   <!-- 只继承struts-default 的package -->
+    <package name="dispather" extends="struts-default">
+    	<action name="index">
+            <result>/index.jsp</result>
+        </action>
+        <action name="HelloWorld.jsp">
+            <result>/HelloWorld.jsp</result>
+        </action>
+        <action name="model.jsp">
+            <result>/model.jsp</result>
+        </action>
+        <action name="road-map.jsp">
+            <result>/road-map.jsp</result>
+        </action>
+        
+        <action name="api" class="com.farubaba.api.action.DispatcherAction" method="api">
+            <result>/WEB-INF/jsp/api.jsp</result>
+        </action>
+    </package>
+    
+    <!-- 只继承struts-default 的package -->
+    <package name="basicstruts2" extends="struts-default">        
+        <action name="hello" class="com.farubaba.api.action.HelloWorldAction" method="execute">
+            <result name="success">/HelloWorld.jsp</result>
+        </action>
+        
+        <action name="doLogin" class="com.farubaba.api.action.LoginAction" method="login">
+        	<result name="success">/WEB-INF/jsp/login.jsp</result>
+        </action>
+        
+        <!-- 
+        这个action name='login' 在添加了struts2-convention-plugin之后，访问就会报错，但是只要修改成上面的doLogin就一切正常。
+        莫名其妙，留着备忘，以后再查证缘由！
+        -->
+        <action name="login" class="com.farubaba.api.action.LoginAction" method="login">
+        	<result name="success">/WEB-INF/jsp/login.jsp</result>
+        </action>
+        
+        <action name="userLogin" class="com.farubaba.api.action.LoginAction" method="userLogin">
+        	<result name="success">/WEB-INF/jsp/login.jsp</result>
+        </action>
+        
+        <action name="jettyDebugConfig" class="com.farubaba.api.action.JettyDebugConfigAction" method="jettyDebugConfig">
+        	<result name="success">/WEB-INF/jsp/maven-jetty-debug-config.jsp</result>
+        </action>
+    </package>
+    
+    <!-- 单独配置namespace  ： api/system/config/ 由于需要返回json，所以需要继承json-default-->
+	<package namespace="/api/sys/config" name="dataserver" extends="json-default,struts-default">
+	 	<action name="v2" class="com.farubaba.api.action.ConfigActionXml" method="config">
+        	<result name="json" type="json">
+        		<param name="root">user</param>  
+        	</result>
+        </action>
+        
+        <action name="vn" class="com.farubaba.api.action.ReceiveAction" method="returnReceive">
+        	<result name="json" type="json">
+        		<param name="root">receivedString</param>  
+        	</result>
+        </action>
+        
+        <action name="doSveToFile" class="com.farubaba.api.action.ReceiveAction" method="doSveToFile">
+        	<result name="json" type="json">
+        		<param name="root">receivedString</param>  
+        	</result>
+        </action>
+       
+	</package>
+	
+	<package namespace="/api/user" name="data-user" extends="json-default,struts-default">
+	
+		<action name="v1" class="com.farubaba.api.action.OkHttpAction" method="getUserList">
+        	<result name="success">/WEB-INF/jsp/okhttp.jsp</result>
+        </action>
+        
+	 	<action name="getUsersApi" class="com.farubaba.api.action.OkHttpAction" method="getUsersApi">
+        	<result name="json" type="json">
+        		<param name="root">userListData</param>  
+        	</result>
+        </action>
+        
+        <action name="v2" class="com.farubaba.api.action.OkHttpAction" method="getUserListApi">
+        	<result name="json" type="json">
+        		<param name="root">users</param>  
+        	</result>
+        </action>
+        
+        <action name="v3" class="com.farubaba.api.action.OkHttpAction" method="getUserListStringApi">
+        	<result name="json" type="json">
+        		<param name="root">userListJsonString</param>  
+        	</result>
+        </action>
+        
+        <action name="v4" class="com.farubaba.api.action.OkHttpAction" method="accessHeader">
+        	<result name="json" type="json">
+        		<param name="root">accessHeader</param>  
+        	</result>
+        </action>
+        <action name="post_plain_text" class="com.farubaba.api.action.OkHttpAction" method="postPlainText">
+        	<result name="json" type="json">
+        		<param name="root">accessHeader</param>  
+        	</result>
+        </action>
+        
+          <action name="post_stream" class="com.farubaba.api.action.OkHttpAction" method="postPStream">
+        	<result name="json" type="json">
+        		<param name="root"></param>  
+        	</result>
+        </action>
+        
+        
+        <action name="post_file" class="com.farubaba.api.action.OkHttpAction" method="postFile">
+        	<result name="json" type="json">
+        		<param name="root"></param>  
+        	</result>
+        	<result name="success">/HelloWorld.jsp</result>
+        </action>
+        
+        <action name="postform" class="com.farubaba.api.action.OkHttpAction" method="postForm">
+        	<result name="json" type="json">
+        		<param name="root">jsonString</param>  
+        	</result>
+        </action>
+        
+        <action name="post_multi_part" class="com.farubaba.api.action.OkHttpAction" method="postMultiPart">
+        	<result name="json" type="json">
+        		<param name="root">jsonString</param>  
+        	</result>
+        </action>
+	</package>
+	
+	<package namespace="/api/bussiness" name="json-apis" extends="json-default,struts-default">
+		<action name="postString" class="com.farubaba.api.action.OkHttpAction" method="postString">
+        	<result name="json" type="json">
+        	 	<param name="excludeNullProperties" >true</param>
+                <param name="ignoreHierarchy" >false</param>
+        		<param name="root">result</param>  
+        	</result>
+        </action>
+	</package>
+</struts>
